@@ -1,7 +1,7 @@
 module RepeaterPlacement
 using StochasticAD, Statistics, Optimisers, Plots, JLD2,
     ParameterSchedulers, StatsBase, Graphs, SimpleWeightedGraphs, GraphPlot, UUIDs,
-    DataFrames, CSV, DataStructures, Dates
+    DataFrames, CSV, DataStructures, Dates, Random
 
 export
     Coordinates, nodes, num_end_nodes, num_repeaters, num_nodes, end_node, repeater, node,

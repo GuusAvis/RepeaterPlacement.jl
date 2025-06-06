@@ -134,5 +134,11 @@
         for i in 1:2, j in 1:2
             @test 0 < repeater(coords, i)[j] < 10
         end
+
+        # consistent seeding
+        coords_1 = RepeaterPlacement.initialize_random(3, 2, 10, Xoshiro(1234))
+        coords_2 = RepeaterPlacement.initialize_random(3, 2, 10, Xoshiro(1234))
+        @test RepeaterPlacement.repeaters(coords_1) == RepeaterPlacement.repeaters(coords_2)
+        @test RepeaterPlacement.end_nodes(coords_1) == RepeaterPlacement.end_nodes(coords_2)
     end
 end

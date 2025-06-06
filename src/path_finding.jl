@@ -69,7 +69,7 @@ is important for algorithms which rely on this property (e.g. `Dict`, `Set`).
 In particular, since every `Path` is equal to its own reverse, every `Path`
 hashes to the same value as its own reverse.
 """
-Base.hash(p::Path) = begin
+function Base.hash(p::Path)
     """
         lexical_lt(a::Vector, b::Vector)
     

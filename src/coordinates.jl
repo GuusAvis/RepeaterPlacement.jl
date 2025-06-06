@@ -285,9 +285,9 @@ end
 Initialize `num_reps` repeaters placed randomly on the line between two end nodes separated
 by a distance `dist` km.
 """
-function initialize_line(num_reps, dist=100)
+function initialize_line(num_reps, dist=100, rng=Random.default_rng())
     end_node_coords = Float64[[0, 0] [dist, 0]]
-    initial_sols = [rand() * dist for _ in 1:num_reps]
+    initial_sols = [rand(rng) * dist for _ in 1:num_reps]
     initial_sol = [[i for i in initial_sols] [0 for _ in initial_sols]]'
     Coordinates(end_node_coords, initial_sol)
 end
@@ -298,7 +298,7 @@ end
 Initialize `num_reps` repeaters placed randomly in a square of end nodes, where the edges
 of the square are `dist` km long.
 """
-function initialize_square(num_reps, dist=100, regular=false)
+function initialize_square(num_reps, dist=100, regular=false, rng=Random.default_rng())
     end_node_coords = Float64[[0, 0] [dist, dist] [0, dist] [dist, 0]]
     if regular
         num_reps_on_grid = floor(sqrt(num_reps)) ^ 2
@@ -308,9 +308,9 @@ function initialize_square(num_reps, dist=100, regular=false)
         for i in 1:sqrt(num_reps_on_grid), j in 1:sqrt(num_reps_on_grid)
             append!(initial_sols, [spacing * i, spacing * j])
         end
-        append!(initial_sols, [rand() * dist for _ in 1:(2num_reps_left_out)])
+        append!(initial_sols, [rand(rng) * dist for _ in 1:(2num_reps_left_out)])
     else
-        initial_sols = [rand() * dist for _ in 1:(2num_reps)]
+        initial_sols = [rand(rng) * dist for _ in 1:(2num_reps)]
     end
     initial_sol = reshape(initial_sols, 2, :)
     Coordinates(end_node_coords, initial_sol)
@@ -323,13 +323,13 @@ Initialize `num_end_nodes` end nodes and `num_reps` repeaters, both placed rando
 
 All coordinates are picked uniformly at random within the square of side length `scale`.
 """
-function initialize_random(num_end_nodes, num_reps, scale=100)
+function initialize_random(num_end_nodes, num_reps, scale=100, rng=Random.default_rng())
     coords = Coordinates()
     for _ in 1:num_end_nodes
-        coords = add_end_node(coords, [rand() * scale, rand() * scale])
+        coords = add_end_node(coords, [rand(rng) * scale, rand(rng) * scale])
     end
     for _ in 1:num_reps
-        coords = add_repeater(coords, [rand() * scale, rand() * scale])
+        coords = add_repeater(coords, [rand(rng) * scale, rand(rng) * scale])
     end
     coords
 end

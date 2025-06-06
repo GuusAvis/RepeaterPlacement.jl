@@ -1,6 +1,6 @@
 using Test
 using RepeaterPlacement, Graphs, SimpleWeightedGraphs, StochasticAD, ParameterSchedulers,
-    DataStructures, Plots
+    DataStructures, Plots, Random
 
 @testset "Coordinates" begin
     include("test_coordinates.jl")
