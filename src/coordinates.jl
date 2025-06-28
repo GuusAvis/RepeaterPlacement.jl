@@ -279,6 +279,20 @@ function build_graph(coords, radius=Inf)
     SimpleWeightedGraph(adjacency_matrix(coords, radius))
 end
 
+function build_waxmann_graph(coords::Coordinates, beta=0.4, alpha=0.1, L=nothing)
+    g = SimpleWeightedGraph(num_nodes(coords))
+    node_pairs = [(i, j) for i in 1:num_nodes(coords), j in 1:i - 1]
+    distances = [distance(i, j) for (i, j) in node_pairs]
+    if L === nothing
+        L = maximum(distances)
+    end
+    for ((i, j), d) in zip(node_pairs, distances)
+        p = beta * exp(-d / alpha / L)
+        rand() < p && add_edge!(g, i, j, d)
+    end
+    g
+end
+
 """
     initialize_line(num_reps, dist=100)
 
@@ -332,4 +346,10 @@ function initialize_random(num_end_nodes, num_reps, scale=100, rng=Random.defaul
         coords = add_repeater(coords, [rand(rng) * scale, rand(rng) * scale])
     end
     coords
+end
+
+function waxmann_graph(num_end_nodes, num_reps, beta=0.4, alpha=0.1, L=1.)
+    coords = initialize_random(num_end_nodes, num_reps, L)
+    g = build_waxmann_graph(coords, beta, alpha, L)
+    g, coords
 end
