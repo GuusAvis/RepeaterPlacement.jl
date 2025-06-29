@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+UPCOMING
+--------
+- Added `waxmann_graph()` and `build_waxmann_graph()` for constructing Waxmann graphs with associated node coordinates.
+
 2025-06-09 (v.0.3.0)
 --------------------
 - Added an optional `rng` parameter for each of the randomized graph generation functions.
