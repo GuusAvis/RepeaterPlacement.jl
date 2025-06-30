@@ -3,13 +3,15 @@
     plot_graph(coords::Coordinates, radius=Inf; path=nothing, kwargs...)
     plot_graph(g::SimpleWeightedGraph, locs_x=nothing, locs_y=nothing; path=nothing,
         kwargs...)
+    plot_graph(g::SimpleWeightedGraph, coords::Coordinates; path=nothing,
+        kwargs...)
 
 Make and plot graph with nodes at correct locations and edges labeled with their lengths.
 
 If a `CoordinateSolution` is provided, a `Coordinates` and `Path` are extracted from it.
 If a `Coordinates` is provided, this function uses `build_graph` to create the graph.
 If a graph is provided, the X and Y coordinates of the nodes must be provided separately
-as `locs_x` and `locs_y` in the form of vectors.
+as `locs_x` and `locs_y` in the form of vectors, or using a `Coordinates` object.
 If a `Path` is provided, the edges in the path will be colored differently from the others.
 Plotting is handled by `GraphPlot.gplot()`.
 """
@@ -52,24 +54,35 @@ function plot_graph(g::SimpleWeightedGraph, locs_x=nothing, locs_y=nothing;
         edgestrokec=edge_colors)#, kwargs...)
 end
 
+function plot_graph(g::SimpleWeightedGraph, coords::Coordinates, path=nothing, kwargs...)
+    locs_x = [node(coords, i)[1] for i in 1:num_nodes(coords)]
+    locs_y = [-node(coords, i)[2] for i in 1:num_nodes(coords)]
+    plot_graph(g, locs_x, locs_y; path=path, kwargs...)
+end
+
+extract_edges(e::Pair{Int, Int}) = [e]
+extract_edges(p::Path) = edges(p)
+extract_edges(g::R) where R <: AbstractGraph = [(e.src, e.dst) for e in Graphs.edges(g)]
+
 """
-    plot_node_locations(coords::Coordinates, paths=[], special_paths=[];
+    plot_node_locations(coords::Coordinates, edges=[], special_edges=[];
         draw_lengths=true, size=(600, 600), legend=false, padding=20, markersize=17,
         tickfontsize=12, guidefontsize=15, annotation_offset=15, annotation_fontsize=15,
         kwargs...)
 
-
 Create a scatter plot showing repeater locations and end-node locations.
 
-If `paths` is provided, all the edges of all of the contained paths are drawn.
-If `special_paths` is provided, the edges of these paths are drawn with a thicker line.
+If `edges` is provided as a list of pairs of node indices, these edges are drawn in the
+figure. If `special_edges` is provided, these edges are drawn with a thicker line.
+Both lists are also allowed to contain `Path` or `SimpleGraph` objects, in which case the
+edges of the paths or graphs are extracted and drawn in the figure.
 
 If `draw_lengths` is set to `true`, the length of each connection is annotated in the figure
 (rounded to a whole number), and the distance of the annotation from its corresponding edge
 and its font size can be controlled using the keyword arguments `annotation_offset` and
 `annotation_fontsize`.
 """
-function plot_node_locations(coords::Coordinates, paths=[], special_paths=[];
+function plot_node_locations(coords::Coordinates, edges=[], special_edges=[];
         draw_lengths=true, size=(600, 600), legend=false, padding=20, markersize=17,
         tickfontsize=12, guidefontsize=15, annotation_offset=15, annotation_fontsize=15,
         kwargs...)
@@ -94,28 +107,17 @@ function plot_node_locations(coords::Coordinates, paths=[], special_paths=[];
     xlims!(x_min - padding, x_max + padding)
     ylims!(y_min - padding, y_max + padding)
 
-    # collect edges from paths
-    special_edgs = []
-    for path in special_paths
-        for e in edges(path)
-            e in special_edgs || (e[2], e[1]) in special_edgs || push!(special_edgs, e)
-        end
-    end
-    edgs = []
-    for path in paths
-        for e in edges(path)
-            e in edgs || (e[2], e[1]) in edgs ||
-            e in special_edgs || (e[2], e[1]) in special_edgs ||
-            push!(edgs, e)
-        end
-    end
+    edges = reduce(vcat, extract_edges.(edges); init=[])
+    edges = Set(Set.(edges))
+    special_edges = reduce(vcat, extract_edges.(special_edges); init=[])
+    special_edges = Set(Set.(special_edges))
 
     # draw all edges
-    for e in Iterators.flatten([edgs, special_edgs])
-        node1 = node(coords, e[1])
-        node2 = node(coords, e[2])
-        lw = e in special_edgs ? 2 : 1
-        col = e in special_edgs ? :black : :grey
+    # for e in Iterators.flatten([edges, special_edges])
+    for e in union(edges, special_edges)
+        node1, node2 = [node(coords, i) for i in e]
+        lw = e in special_edges ? 2 : 1
+        col = e in special_edges ? :black : :grey
         plot!(p, [node1[1], node2[1]], [node1[2], node2[2]], color=col, linewidth=lw,
             z_order=:back, label=nothing)
         if draw_lengths
