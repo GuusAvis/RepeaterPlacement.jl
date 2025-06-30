@@ -99,6 +99,25 @@
         @test !has_edge(g, 1, 3)
         @test !has_edge(g, 2, 3)
     end
+
+    @testset "build_waxmann_graph" begin
+        coords = Coordinates([[0, 0] [0, 3] [10, 0]])
+        g = build_waxmann_graph(coords)
+        @test nv(g) == 3
+        @test 0 <= ne(g) <= 3
+
+        # probability 1 for each edge
+        g = build_waxmann_graph(coords, 1, Inf)
+        @test nv(g) == 3
+        @test ne(g) == 3
+        @test get_weight(g, 1, 2) == 3
+
+        # probability 0 for each edge
+        g = build_waxmann_graph(coords, 0)
+        @test nv(g) == 3
+        @test ne(g) == 0
+    end
+
     @testset "random initialization" begin
         # line
         line = RepeaterPlacement.initialize_line(3, 10)
@@ -140,5 +159,31 @@
         coords_2 = RepeaterPlacement.initialize_random(3, 2, 10, Xoshiro(1234))
         @test RepeaterPlacement.repeaters(coords_1) == RepeaterPlacement.repeaters(coords_2)
         @test RepeaterPlacement.end_nodes(coords_1) == RepeaterPlacement.end_nodes(coords_2)
+    end
+
+    @testset "waxmann_graph" begin
+        g, coords = waxmann_graph(3, 2, 10.)
+        @test num_end_nodes(coords) == 3
+        @test num_repeaters(coords) == 2
+        @test num_nodes(coords) == 5
+        for i in 1:3, j in 1:2
+            @test 0 < end_node(coords, i)[j] < 10
+        end
+        for i in 1:2, j in 1:2
+            @test 0 < repeater(coords, i)[j] < 10
+        end
+        @test nv(g) == 5
+        @test 0 <= ne(g) <= 10
+
+        # deterministic edges
+        g, coords = waxmann_graph(3, 2, 1., Inf)
+        @test nv(g) == 5
+        @test ne(g) == 5 * 4 / 2
+
+        # no edges
+        g, coords = waxmann_graph(3, 2, 0.)
+        @test nv(g) == 5
+        @test ne(g) == 0
+
     end
 end
