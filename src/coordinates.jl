@@ -280,11 +280,11 @@ function build_graph(coords, radius=Inf)
 end
 
 """
-    build_waxmann_graph(coords::Coordinates, beta=0.4, alpha=0.1, L=nothing)
+    build_waxman_graph(coords::Coordinates, beta=0.4, alpha=0.1, L=nothing)
 
-Create a graph from the node coordinates probabilistically using the Waxmann formula.
+Create a graph from the node coordinates probabilistically using the Waxman formula.
 
-A Waxmann graph is a graph where nodes are assigned coordinates uniformly at random,
+A Waxman graph is a graph where nodes are assigned coordinates uniformly at random,
 and an edge is added probabilistically between each pair of nodes with probability
 ```math
 p = \beta \exp(-\frac{d}{\alpha L})
@@ -300,11 +300,11 @@ This function has been written to be consistent with the [implementation in the 
 Python library](https://networkx.org/documentation/stable/reference/generated/networkx.generators.geometric.waxman_graph.html).
 
 # References
-- Waxmann, S. J. (1990). "Routing of multipoint connections in a packet-switched network."
+- Waxman, S. J. (1990). "Routing of multipoint connections in a packet-switched network."
   IEEE Journal on Selected Areas in Communications, 8(9), 1558-1567.
 
 """
-function build_waxmann_graph(coords::Coordinates, beta=0.4, alpha=0.1, L=nothing)
+function build_waxman_graph(coords::Coordinates, beta=0.4, alpha=0.1, L=nothing)
     g = SimpleWeightedGraph(num_nodes(coords))
     node_pairs = [(i, j) for i in 1:num_nodes(coords) for j in 1:i - 1]
     distances = [distance(node(coords, i), node(coords, j)) for (i, j) in node_pairs]
@@ -372,11 +372,11 @@ function initialize_random(num_end_nodes, num_reps, scale=100, rng=Random.defaul
 end
 
 """
-    waxmann_graph(num_end_nodes, num_reps, beta=0.4, alpha=0.1, L=1.)
+    waxman_graph(num_end_nodes, num_reps, beta=0.4, alpha=0.1, L=1.)
 
-Create a Waxmann graph and a corresponding `Coordinates` object.
+Create a Waxman graph and a corresponding `Coordinates` object.
 
-A Waxmann graph is a graph where nodes are assigned coordinates uniformly at random,
+A Waxman graph is a graph where nodes are assigned coordinates uniformly at random,
 and an edge is added probabilistically between each pair of nodes with probability
 ```math
 p = \beta \exp(-\frac{d}{\alpha L})
@@ -385,21 +385,21 @@ where `d` is the distance between the nodes, `L` is a scaling factor (default is
 distance between any two nodes), and `\beta` and `\alpha` are parameters that control the
 edge addition probability.
 
-This function creates a Waxmann graph by first creating a `Coordinates` object with
+This function creates a Waxman graph by first creating a `Coordinates` object with
 `num_end_nodes` end nodes and `num_reps` repeaters, each placed uniformly at random
 using `initialize_random`.
-Then a corresponding `SimpleWeightedGraph` is built using `build_waxmann_graph`.
+Then a corresponding `SimpleWeightedGraph` is built using `build_waxman_graph`.
 
 This function has been written to be consistent with the [implementation in the NetworkX
 Python library](https://networkx.org/documentation/stable/reference/generated/networkx.generators.geometric.waxman_graph.html).
 
 # References
-- Waxmann, S. J. (1990). "Routing of multipoint connections in a packet-switched network."
+- Waxman, S. J. (1990). "Routing of multipoint connections in a packet-switched network."
   IEEE Journal on Selected Areas in Communications, 8(9), 1558-1567.
 
 """
-function waxmann_graph(num_end_nodes, num_reps, beta=0.4, alpha=0.1, L=1.)
+function waxman_graph(num_end_nodes, num_reps, beta=0.4, alpha=0.1, L=1.)
     coords = initialize_random(num_end_nodes, num_reps, L)
-    g = build_waxmann_graph(coords, beta, alpha, L)
+    g = build_waxman_graph(coords, beta, alpha, L)
     g, coords
 end

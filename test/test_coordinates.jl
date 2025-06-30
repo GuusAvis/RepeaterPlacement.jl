@@ -100,20 +100,20 @@
         @test !has_edge(g, 2, 3)
     end
 
-    @testset "build_waxmann_graph" begin
+    @testset "build_waxman_graph" begin
         coords = Coordinates([[0, 0] [0, 3] [10, 0]])
-        g = build_waxmann_graph(coords)
+        g = build_waxman_graph(coords)
         @test nv(g) == 3
         @test 0 <= ne(g) <= 3
 
         # probability 1 for each edge
-        g = build_waxmann_graph(coords, 1, Inf)
+        g = build_waxman_graph(coords, 1, Inf)
         @test nv(g) == 3
         @test ne(g) == 3
         @test get_weight(g, 1, 2) == 3
 
         # probability 0 for each edge
-        g = build_waxmann_graph(coords, 0)
+        g = build_waxman_graph(coords, 0)
         @test nv(g) == 3
         @test ne(g) == 0
     end
@@ -161,8 +161,8 @@
         @test RepeaterPlacement.end_nodes(coords_1) == RepeaterPlacement.end_nodes(coords_2)
     end
 
-    @testset "waxmann_graph" begin
-        g, coords = waxmann_graph(3, 2, 10.)
+    @testset "waxman_graph" begin
+        g, coords = waxman_graph(3, 2, 10.)
         @test num_end_nodes(coords) == 3
         @test num_repeaters(coords) == 2
         @test num_nodes(coords) == 5
@@ -176,12 +176,12 @@
         @test 0 <= ne(g) <= 10
 
         # deterministic edges
-        g, coords = waxmann_graph(3, 2, 1., Inf)
+        g, coords = waxman_graph(3, 2, 1., Inf)
         @test nv(g) == 5
         @test ne(g) == 5 * 4 / 2
 
         # no edges
-        g, coords = waxmann_graph(3, 2, 0.)
+        g, coords = waxman_graph(3, 2, 0.)
         @test nv(g) == 5
         @test ne(g) == 0
 
