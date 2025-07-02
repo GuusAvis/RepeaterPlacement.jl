@@ -280,7 +280,8 @@ function build_graph(coords, radius=Inf)
 end
 
 """
-    build_waxman_graph(coords::Coordinates, beta=0.4, alpha=0.1, L=nothing)
+    build_waxman_graph(coords::Coordinates, beta=0.4, alpha=0.1, L=nothing,
+        rng=Random.default_rng())
 
 Create a graph from the node coordinates probabilistically using the Waxman formula.
 
@@ -304,14 +305,16 @@ Python library](https://networkx.org/documentation/stable/reference/generated/ne
   IEEE Journal on Selected Areas in Communications, 8(9), 1558-1567.
 
 """
-function build_waxman_graph(coords::Coordinates, beta=0.4, alpha=0.1, L=nothing)
+function build_waxman_graph(coords::Coordinates, beta=0.4, alpha=0.1, L=nothing,
+        rng=Random.default_rng())
     g = SimpleWeightedGraph(num_nodes(coords))
+    iszero(alpha) && return g
     node_pairs = [(i, j) for i in 1:num_nodes(coords) for j in 1:i - 1]
     distances = [distance(node(coords, i), node(coords, j)) for (i, j) in node_pairs]
     isnothing(L) && (L = maximum(distances))
     for ((i, j), d) in zip(node_pairs, distances)
         p = beta * exp(-d / alpha / L)
-        rand() < p && add_edge!(g, i, j, d)
+        rand(rng) < p && add_edge!(g, i, j, d)
     end
     g
 end
@@ -354,7 +357,7 @@ function initialize_square(num_reps, dist=100, regular=false, rng=Random.default
 end
 
 """
-    initialize_random(num_end_nodes, num_reps, scale=100)
+    initialize_random(num_end_nodes, num_reps, scale=100, rng=Random.default_rng())
 
 Initialize `num_end_nodes` end nodes and `num_reps` repeaters, both placed randomly.
 
@@ -372,7 +375,8 @@ function initialize_random(num_end_nodes, num_reps, scale=100, rng=Random.defaul
 end
 
 """
-    waxman_graph(num_end_nodes, num_reps, beta=0.4, alpha=0.1, L=1.)
+    waxman_graph(num_end_nodes, num_reps, beta=0.4, alpha=0.1, L=1.,
+        rng=Random.default_rng())
 
 Create a Waxman graph and a corresponding `Coordinates` object.
 
@@ -381,13 +385,12 @@ and an edge is added probabilistically between each pair of nodes with probabili
 ```math
 p = \beta \exp(-\frac{d}{\alpha L})
 ```
-where `d` is the distance between the nodes, `L` is a scaling factor (default is the maximum
-distance between any two nodes), and `\beta` and `\alpha` are parameters that control the
-edge addition probability.
+where `d` is the distance between the nodes, `L` is a scaling factor,
+and `\beta` and `\alpha` are parameters that control the edge addition probability.
 
 This function creates a Waxman graph by first creating a `Coordinates` object with
 `num_end_nodes` end nodes and `num_reps` repeaters, each placed uniformly at random
-using `initialize_random`.
+using `initialize_random` with `L` as `scale` value.
 Then a corresponding `SimpleWeightedGraph` is built using `build_waxman_graph`.
 
 This function has been written to be consistent with the [implementation in the NetworkX
@@ -398,8 +401,9 @@ Python library](https://networkx.org/documentation/stable/reference/generated/ne
   IEEE Journal on Selected Areas in Communications, 8(9), 1558-1567.
 
 """
-function waxman_graph(num_end_nodes, num_reps, beta=0.4, alpha=0.1, L=1.)
-    coords = initialize_random(num_end_nodes, num_reps, L)
-    g = build_waxman_graph(coords, beta, alpha, L)
+function waxman_graph(num_end_nodes, num_reps, beta=0.4, alpha=0.1, L=1.,
+        rng=Random.default_rng())
+    coords = initialize_random(num_end_nodes, num_reps, L, rng)
+    g = build_waxman_graph(coords, beta, alpha, L, rng)
     g, coords
 end

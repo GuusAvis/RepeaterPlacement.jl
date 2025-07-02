@@ -116,6 +116,12 @@
         g = build_waxman_graph(coords, 0)
         @test nv(g) == 3
         @test ne(g) == 0
+
+        # consistent seeding
+        coords = RepeaterPlacement.initialize_random(10, 10, 100)
+        g1 = build_waxman_graph(coords, 0.4, 1., 100, Xoshiro(1234))
+        g2 = build_waxman_graph(coords, 0.4, 1., 100, Xoshiro(1234))
+        @test g1 == g2
     end
 
     @testset "random initialization" begin
@@ -184,6 +190,13 @@
         g, coords = waxman_graph(3, 2, 0.)
         @test nv(g) == 5
         @test ne(g) == 0
+
+        # consistent seeding
+        g1, coords1 = waxman_graph(5, 10, 0.5, 10., 1., Xoshiro(1234))
+        g2, coords2 = waxman_graph(5, 10, 0.5, 10., 1., Xoshiro(1234))
+        @test g1 == g2
+        @test RepeaterPlacement.repeaters(coords1) == RepeaterPlacement.repeaters(coords2)
+        @test RepeaterPlacement.end_nodes(coords1) == RepeaterPlacement.end_nodes(coords2)
 
     end
 end
